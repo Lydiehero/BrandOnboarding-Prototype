@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run preview)",
+      "Bash(npm install)",
+      "Bash(npx vite*)",
+      "Bash(bash scripts/inject-persona.sh)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/inject-persona.sh",
+            "statusMessage": "Loading persona..."
+          }
+        ]
+      }
+    ]
+  }
+}
