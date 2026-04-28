@@ -9,12 +9,14 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
 import ConnectedLayout from '@/layouts/ConnectedLayout.vue'
+import BlankLayout from '@/layouts/BlankLayout.vue'
 
 const route = useRoute()
 
 const layouts: Record<string, any> = {
   default: AppLayout,
   connected: ConnectedLayout,
+  blank: BlankLayout,
 }
 
 const layout = computed(() => {

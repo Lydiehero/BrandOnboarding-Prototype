@@ -1,0 +1,63 @@
+export interface ProductVariant {
+  name: string
+  sku: string
+  stock: number
+  price: string
+}
+
+export interface Product {
+  id: number
+  emoji: string
+  name: string
+  sku: string
+  stock: number
+  status: 'online' | 'offline' | 'pending'
+  price: string
+  variants: ProductVariant[]
+}
+
+export const PRODUCTS: Product[] = [
+  {
+    id: 1, emoji: '🕯️', name: 'Hand-poured candle', sku: 'MB-CND-001', stock: 120, status: 'online', price: '18.00',
+    variants: [
+      { name: 'Fig', sku: 'MB-CND-FIG', stock: 42, price: '18.00' },
+      { name: 'Rose', sku: 'MB-CND-ROS', stock: 38, price: '18.00' },
+      { name: 'Cedar', sku: 'MB-CND-CED', stock: 40, price: '18.00' },
+    ],
+  },
+  {
+    id: 2, emoji: '🫖', name: 'Stoneware mug', sku: 'MB-MUG-001', stock: 240, status: 'online', price: '16.00',
+    variants: [
+      { name: 'Ecru', sku: 'MB-MUG-ECR', stock: 74, price: '16.00' },
+      { name: 'Moss', sku: 'MB-MUG-MOS', stock: 52, price: '16.00' },
+      { name: 'Clay', sku: 'MB-MUG-CLA', stock: 68, price: '16.00' },
+      { name: 'Navy', sku: 'MB-MUG-NAV', stock: 46, price: '16.00' },
+    ],
+  },
+  {
+    id: 3, emoji: '🏺', name: 'Ceramic vase', sku: 'MB-VSE-001', stock: 12, status: 'online', price: '34.00',
+    variants: [
+      { name: 'Small (15 cm)', sku: 'MB-VSE-S', stock: 8, price: '28.00' },
+      { name: 'Large (28 cm)', sku: 'MB-VSE-L', stock: 4, price: '48.00' },
+    ],
+  },
+  {
+    id: 4, emoji: '🧺', name: 'Linen tablecloth', sku: 'MB-LIN-001', stock: 45, status: 'online', price: '48.00',
+    variants: [
+      { name: 'Medium (140×200)', sku: 'MB-LIN-M', stock: 22, price: '48.00' },
+      { name: 'Large (180×280)', sku: 'MB-LIN-L', stock: 23, price: '62.00' },
+    ],
+  },
+  { id: 5, emoji: '🪵', name: 'Oak serving board', sku: 'MB-OAK-001', stock: 0, status: 'online', price: '62.00', variants: [] },
+  { id: 6, emoji: '🛏️', name: 'Raw silk cushion', sku: 'MB-CSH-001', stock: 8, status: 'online', price: '54.00', variants: [] },
+  { id: 7, emoji: '🥣', name: 'Ceramic bowl set', sku: 'MB-BWL-001', stock: 34, status: 'offline', price: '42.00', variants: [] },
+  { id: 8, emoji: '🧴', name: 'Hand cream', sku: 'MB-HND-001', stock: 18, status: 'offline', price: '22.00', variants: [] },
+]
+
+export const SAMPLE_PRODUCTS = [
+  { emoji: '🕯️', name: 'Hand-poured candle', price: '€18.00', retail: 'Retail €36 · x6 min' },
+  { emoji: '🫖', name: 'Stoneware mug', price: '€16.00', retail: 'Retail €32 · x4 min' },
+  { emoji: '🏺', name: 'Ceramic vase', price: '€34.00', retail: 'Retail €68 · x2 min' },
+  { emoji: '🧺', name: 'Linen tablecloth', price: '€48.00', retail: 'Retail €96 · x2 min' },
+  { emoji: '🛏️', name: 'Raw silk cushion', price: '€54.00', retail: 'Retail €108 · x2 min' },
+]

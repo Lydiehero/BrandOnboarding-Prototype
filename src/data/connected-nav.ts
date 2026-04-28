@@ -15,18 +15,21 @@ export interface NavItem {
 }
 
 export const topItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: 'home' },
   {
-    path: '/orders',
-    label: 'Orders',
-    icon: 'cart',
+    path: '/',
+    label: 'Dashboard',
+    icon: 'house',
     children: [
-      { path: '/orders', label: 'All orders' },
+      { path: '/', label: 'Success checklist' },
+      { path: '/', label: 'Discounts & offers' },
+      { path: '/', label: 'Carts to convert' },
+      { path: '/', label: 'Ads' },
     ],
   },
-  { path: '/network', label: 'My network', icon: 'people' },
+  { path: '/orders', label: 'Orders', icon: 'cone-striped' },
+  { path: '/network', label: 'My Network', icon: 'globe' },
   { path: '/products', label: 'Products', icon: 'box-seam' },
-  { path: '/shop', label: 'My shop', icon: 'shop-window' },
+  { path: '/shop', label: 'Edit my shop', icon: 'shop-window' },
   { path: '/messages', label: 'Messages', icon: 'chat', badge: '3' },
 ]
 
