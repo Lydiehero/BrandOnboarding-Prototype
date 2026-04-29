@@ -11,6 +11,11 @@ const routes = [
     meta: { title: 'Prototype hub', layout: 'blank' },
   },
   {
+    path: '/',
+    component: () => import('@/pages/PrototypeHubPage.vue'),
+    meta: { title: 'Prototype hub', layout: 'blank' },
+  },
+  {
     path: '/onboarding',
     component: () => import('@/pages/OnboardingPage.vue'),
     meta: { title: 'Set up your brand', layout: 'blank' },
@@ -61,7 +66,7 @@ const routes = [
     meta: { title: 'Preview & Launch', layout: 'blank' },
   },
   {
-    path: '/',
+    path: '/home',
     component: () => import('@/pages/HomePage.vue'),
     meta: { title: 'Dashboard', icon: 'home', layout: 'connected' },
   },

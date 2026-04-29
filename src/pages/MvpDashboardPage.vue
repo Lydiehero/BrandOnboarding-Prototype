@@ -91,7 +91,7 @@
             >
               {{ t.secondaryCta }}
             </AkButton>
-            <AkButton outlined size="md" @click.stop="markDone(t)">
+            <AkButton v-if="t.key !== 'catalogue'" outlined size="md" @click.stop="markDone(t)">
               Mark as done
             </AkButton>
           </div>
@@ -146,13 +146,10 @@ const tasks = ref<Task[]>([
     label: 'Add your catalogue',
     shortDesc: 'We spotted your shop — we can pull your products in one go.',
     message:
-      "We detected your <strong>Magento store</strong> at <strong>yourshop.com</strong>. We can pull your products straight from there in one go — or you can add them one by one. Brands with a complete catalogue get discovered 5× more often.",
-    cta: 'Import your catalogue',
+      "We detected your <strong>Magento store</strong> at <strong>yourshop.com</strong>. We can pull your products straight from there in one go — or you can add them one by one.",
+    cta: "Let's add your catalogue",
     actionIcon: 'magic',
-    href: '/mvp/catalogue-import',
-    secondaryCta: 'Add one product',
-    secondaryIcon: 'plus-circle',
-    secondaryAction: 'open-drawer',
+    href: '/mvp/products',
     doneHref: '/mvp/products',
     done: false,
   },
@@ -479,25 +476,47 @@ watch(
 }
 
 .task {
-  background: var(--white);
+  position: relative;
+  background: #F9F9F9;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--space-5) var(--space-5) var(--space-5) calc(var(--space-5) + 6px);
   cursor: pointer;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: var(--shadow-xs);
+  transition: border-color 150ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+.task::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #FFB070 0%, #FF6400 100%);
+  opacity: 0.85;
 }
 
 .task:hover:not(.task--locked) {
-  border-color: var(--primary);
+  border-color: #E8C9A3;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .task--active {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  border-color: #E8B788;
+  box-shadow: var(--shadow-md);
+  background: #F9F9F9;
 }
 
 .task--done {
-  background: #FBFEF4;
+  background: #F9F9F9;
+  border-color: #E2EFC0;
+}
+
+.task--done::before {
+  background: linear-gradient(180deg, #D5FC52 0%, #A9C932 100%);
 }
 
 .task--locked {
@@ -512,22 +531,25 @@ watch(
 }
 
 .task__num {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--neutral-100);
-  color: var(--neutral-700);
-  font-size: 14px;
+  background: var(--white);
+  color: #C25A14;
+  font-size: 15px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1.5px solid #F2E4D0;
+  box-shadow: var(--shadow-xs);
 }
 
 .task--active .task__num {
-  background: var(--primary);
+  background: linear-gradient(135deg, #FFB070 0%, #FF6400 100%);
   color: var(--white);
+  border-color: transparent;
 }
 
 .task--done .task__num {
@@ -540,20 +562,22 @@ watch(
 }
 
 .task__title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--primary);
-  margin: 0 0 var(--space-1);
+  margin: 0 0 4px;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  letter-spacing: -0.01em;
 }
 
 .task__desc {
-  font-size: 13px;
-  color: var(--neutral-700);
+  font-size: 14px;
+  color: #6B5A4B;
   margin: 0;
+  line-height: 1.45;
 }
 
 .task__chevron {

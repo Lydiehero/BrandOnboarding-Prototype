@@ -10,7 +10,10 @@
         </p>
       </div>
       <div class="mp-head__actions">
-        <AkButton outlined symbol="magic" @click="goImport">Import in bulk</AkButton>
+        <a class="mp-head__download" href="/templates/ankorstore-catalogue-template.csv" download>
+          <AkIcon symbol="download" size="sm" />
+          Download Ankorstore template
+        </a>
         <AkButton color="primary" symbol="plus-circle" @click="openDrawer">Add a product</AkButton>
       </div>
     </header>
@@ -73,15 +76,35 @@
       </div>
     </section>
 
-    <section v-else class="mp-empty">
-      <div class="mp-empty__icon"><AkIcon symbol="box-seam" /></div>
-      <h2 class="mp-empty__title">Your catalogue is empty</h2>
-      <p class="mp-empty__text">
-        Add your products one by one, or import them in bulk from your existing shop.
+    <section v-else class="mp-magento">
+      <div class="mp-magento__badge">
+        <AkIcon symbol="magic" size="sm" />
+        <span>We spotted your shop</span>
+      </div>
+      <h2 class="mp-magento__title">Bring your Magento catalogue in, in two steps</h2>
+      <p class="mp-magento__text">
+        We detected your <strong>Magento store</strong> at <strong>yourshop.com</strong>. Export your products from Magento as a CSV, then drop the file here — we'll map your fields automatically and your catalogue will be ready in minutes.
       </p>
-      <div class="mp-empty__actions">
-        <AkButton color="primary" symbol="plus-circle" @click="openDrawer">Add a product</AkButton>
-        <AkButton outlined symbol="magic" @click="goImport">Import in bulk</AkButton>
+
+      <ol class="mp-magento__steps">
+        <li>
+          <span class="mp-magento__num">1</span>
+          <div>
+            <h3>Export from Magento</h3>
+            <p>In your Magento admin, go to <em>System → Data Transfer → Export</em>. Choose <em>Products</em> and export as CSV.</p>
+          </div>
+        </li>
+        <li>
+          <span class="mp-magento__num">2</span>
+          <div>
+            <h3>Import here</h3>
+            <p>Upload the CSV — we'll match images, prices, stock and variants. You can review everything before going live.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="mp-magento__actions">
+        <AkButton color="primary" symbol="magic" @click="goImport">Import from Magento</AkButton>
       </div>
     </section>
 
@@ -151,6 +174,27 @@ function goImport() { router.push('/mvp/catalogue-import') }
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.mp-head__download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1px solid #F2E4D0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #C25A14;
+  text-decoration: none;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.mp-head__download:hover {
+  border-color: #C25A14;
+  transform: translateY(-1px);
 }
 
 /* Table */
@@ -312,5 +356,128 @@ function goImport() { router.push('/mvp/catalogue-import') }
   flex-wrap: wrap;
   justify-content: center;
   margin-top: var(--space-3);
+}
+
+/* Magento import card */
+.mp-magento {
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-xs);
+}
+
+.mp-magento__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 12px;
+  background: #FFF1E0;
+  color: #C25A14;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mp-magento__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.mp-magento__text {
+  font-size: 14px;
+  color: var(--neutral-700);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.mp-magento__steps {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mp-magento__steps li {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: #F9F9F9;
+  border-radius: var(--radius-md);
+}
+
+.mp-magento__steps h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 4px;
+}
+
+.mp-magento__steps p {
+  font-size: 13px;
+  color: var(--neutral-700);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mp-magento__steps em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.mp-magento__num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFB070 0%, #FF6400 100%);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mp-magento__download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-2);
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1px solid #F2E4D0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #C25A14;
+  text-decoration: none;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.mp-magento__download:hover {
+  border-color: #C25A14;
+  transform: translateY(-1px);
+}
+
+.mp-magento__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
 }
 </style>

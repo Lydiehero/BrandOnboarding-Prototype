@@ -1,0 +1,2 @@
+name,sku,category,description,retail_price_eur,wholesale_price_eur,stock,min_order_qty,pack_size,weight_g,image_url_1,image_url_2,image_url_3,tags,variant_name,variant_value
+Example Product,SKU-001,Home & Living,Short product description here,29.90,14.95,120,6,1,250,https://example.com/img1.jpg,,,handmade;eco,,
