@@ -16,19 +16,19 @@ export interface NavItem {
 
 export const topItems: NavItem[] = [
   {
-    path: '/',
+    path: '/mvp/dashboard',
     label: 'Dashboard',
     icon: 'house',
     children: [
-      { path: '/', label: 'Success checklist' },
-      { path: '/', label: 'Discounts & offers' },
-      { path: '/', label: 'Carts to convert' },
-      { path: '/', label: 'Ads' },
+      { path: '/mvp/dashboard', label: 'Success checklist' },
+      { path: '/mvp/dashboard', label: 'Discounts & offers' },
+      { path: '/mvp/dashboard', label: 'Carts to convert' },
+      { path: '/mvp/dashboard', label: 'Ads' },
     ],
   },
   { path: '/orders', label: 'Orders', icon: 'cone-striped' },
   { path: '/network', label: 'My Network', icon: 'globe' },
-  { path: '/products', label: 'Products', icon: 'box-seam' },
+  { path: '/mvp/products', label: 'Products', icon: 'box-seam' },
   { path: '/shop', label: 'Edit my shop', icon: 'shop-window' },
   { path: '/messages', label: 'Messages', icon: 'chat', badge: '3' },
 ]

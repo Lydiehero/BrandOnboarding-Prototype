@@ -15,22 +15,13 @@
           <p class="ci-subtitle">
             We checked the website you gave us during signup. Pick the path that fits.
           </p>
+          <p class="ci-reassure">
+            <AkIcon symbol="shield-check" size="sm" />
+            <span>Importing doesn't publish anything yet — you'll choose which products go live in the next step.</span>
+          </p>
         </div>
 
-        <div class="ci-demo-switch">
-          <span class="ci-demo-switch__label">Select option:</span>
-          <button
-            v-for="opt in detectionStates"
-            :key="opt.key"
-            class="ci-demo-switch__btn"
-            :class="{ 'ci-demo-switch__btn--active': detectionState === opt.key }"
-            @click="detectionState = opt.key"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-
-        <article v-if="detectionState === 'guide'" class="ci-detect ci-detect--info">
+<article v-if="detectionState === 'guide'" class="ci-detect ci-detect--info">
           <div class="ci-detect__head">
             <div class="ci-detect__logo ci-detect__logo--magento">M</div>
             <div>
@@ -57,7 +48,6 @@
             <AkButton color="primary" symbol="magic" @click="startImport">
               Import my catalogue
             </AkButton>
-            <AkButton outlined>Download our template instead</AkButton>
           </div>
         </article>
 
@@ -156,6 +146,12 @@
         </div>
       </section>
 
+      <!-- Paste toast (step 3) -->
+      <div v-if="pasteToast" class="ci-paste-toast">
+        <AkIcon symbol="check-circle-fill" size="sm" />
+        {{ pasteToast }}
+      </div>
+
       <!-- ── STEP 3: Review (full page editable table) ── -->
       <section v-if="step === 3" class="ci-review">
         <div class="ci-review__head">
@@ -182,6 +178,52 @@
           </div>
         </div>
 
+        <!-- Paste tip banner (dismissible, remembered) -->
+        <div v-if="showPasteTip" class="ci-paste-tip" role="status">
+          <AkIcon class="ci-paste-tip__icon" symbol="lightbulb-fill" />
+          <div class="ci-paste-tip__body">
+            <strong>Tip — copy-paste from Excel works.</strong>
+            Select a column in your spreadsheet, click the first <strong>Wholesale</strong>, <strong>Stock</strong> or <strong>Retail</strong> cell, then paste.
+          </div>
+          <button class="ci-paste-tip__close" aria-label="Dismiss" @click="dismissPasteTip">×</button>
+        </div>
+
+        <!-- Search & filters -->
+        <div class="ci-toolbar">
+          <div class="ci-search">
+            <AkIcon symbol="search" size="sm" />
+            <input v-model="searchQuery" class="ci-search__input" placeholder="Search by name, SKU or tag…" />
+            <button v-if="searchQuery" class="ci-search__clear" @click="searchQuery = ''">×</button>
+          </div>
+          <div class="ci-filters">
+            <select v-model="filterStock" class="ci-filter">
+              <option value="">All stock</option>
+              <option value="in">In stock</option>
+              <option value="out">Out of stock</option>
+              <option value="missing">Missing stock</option>
+            </select>
+            <select v-model="filterPrice" class="ci-filter">
+              <option value="">All retail prices</option>
+              <option value="lt20">Below €20</option>
+              <option value="20to50">€20 – €50</option>
+              <option value="gt50">Above €50</option>
+            </select>
+            <select v-model="filterVat" class="ci-filter">
+              <option value="">All VAT</option>
+              <option value="20">20%</option>
+              <option value="10">10%</option>
+              <option value="5.5">5.5%</option>
+              <option value="0">0%</option>
+            </select>
+            <select v-model="filterStatus" class="ci-filter">
+              <option value="">All</option>
+              <option value="ready">Ready to publish</option>
+              <option value="needs">Needs attention</option>
+              <option value="missingWholesale">Missing wholesale</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Bulk edit toolbar -->
         <div class="ci-bulk">
           <div class="ci-bulk__left">
@@ -205,20 +247,55 @@
           </div>
 
           <div v-if="selectedIds.length > 0" class="ci-bulk__actions">
-            <span class="ci-bulk__label">Set wholesale at</span>
-            <div class="ci-bulk__input-wrap">
-              <input
-                v-model.number="bulkPct"
-                type="number"
-                min="1"
-                max="99"
-                class="ci-bulk__input"
-              />
-              <span class="ci-bulk__suffix">% of retail</span>
-            </div>
-            <AkButton color="primary" size="sm" symbol="check-lg" @click="applyBulkWholesale">
-              Apply to {{ selectedIds.length }}
-            </AkButton>
+            <select v-model="bulkAction" class="ci-bulk__pick">
+              <option value="wholesale">Set wholesale price</option>
+              <option value="retail">Set retail price</option>
+              <option value="stock">Set stock</option>
+              <option value="vat">Set VAT</option>
+              <option value="tags">Add tag</option>
+            </select>
+
+            <template v-if="bulkAction === 'wholesale'">
+              <div class="ci-bulk__input-wrap">
+                <input v-model.number="bulkPct" type="number" min="1" max="99" class="ci-bulk__input" />
+                <span class="ci-bulk__suffix">% of retail</span>
+              </div>
+              <AkButton color="primary" size="sm" symbol="check-lg" @click="applyBulkWholesale">
+                Apply to {{ selectedIds.length }}
+              </AkButton>
+            </template>
+
+            <template v-if="bulkAction === 'retail'">
+              <div class="ci-bulk__input-wrap">
+                <span class="ci-bulk__suffix">€</span>
+                <input v-model.number="bulkRetail" type="number" min="0" class="ci-bulk__input" />
+              </div>
+              <AkButton color="primary" size="sm" symbol="check-lg" @click="applyBulkRetail">Apply to {{ selectedIds.length }}</AkButton>
+            </template>
+
+            <template v-if="bulkAction === 'stock'">
+              <div class="ci-bulk__input-wrap">
+                <input v-model.number="bulkStock" type="number" min="0" class="ci-bulk__input" />
+                <span class="ci-bulk__suffix">units</span>
+              </div>
+              <AkButton color="primary" size="sm" symbol="check-lg" @click="applyBulkStock">Apply to {{ selectedIds.length }}</AkButton>
+            </template>
+
+            <template v-if="bulkAction === 'vat'">
+              <select v-model.number="bulkVat" class="ci-filter">
+                <option :value="20">20%</option>
+                <option :value="10">10%</option>
+                <option :value="5.5">5.5%</option>
+                <option :value="0">0%</option>
+              </select>
+              <AkButton color="primary" size="sm" symbol="check-lg" @click="applyBulkVat">Apply to {{ selectedIds.length }}</AkButton>
+            </template>
+
+            <template v-if="bulkAction === 'tags'">
+              <input v-model="bulkTag" class="ci-bulk__input ci-bulk__input--wide" placeholder="e.g. handmade" />
+              <AkButton color="primary" size="sm" symbol="plus" @click="applyBulkTag">Add to {{ selectedIds.length }}</AkButton>
+            </template>
+
             <button class="ci-bulk__clear" @click="selectedIds = []">Clear selection</button>
           </div>
         </div>
@@ -229,20 +306,25 @@
             <div class="ci-th ci-th--check"></div>
             <div class="ci-th ci-th--img"></div>
             <div class="ci-th">Product</div>
-            <div class="ci-th">Category</div>
             <div class="ci-th ci-th--num">SKU</div>
-            <div class="ci-th ci-th--num">Stock</div>
-            <div class="ci-th ci-th--num">Retail €</div>
+            <div class="ci-th ci-th--num">
+              Stock
+              <span class="ci-th__hint">Paste a column to fill</span>
+            </div>
+            <div class="ci-th ci-th--num">
+              Retail €
+              <span class="ci-th__hint">Paste a column to fill</span>
+            </div>
             <div class="ci-th ci-th--num">VAT %</div>
             <div class="ci-th ci-th--num ci-th--highlight">
               Wholesale €
-              <span class="ci-th__hint">Suggested in placeholder</span>
+              <span class="ci-th__hint">Paste a column to fill</span>
             </div>
             <div class="ci-th ci-th--num">Margin</div>
             <div class="ci-th ci-th--chev"></div>
           </div>
 
-          <template v-for="p in products" :key="p.id">
+          <template v-for="p in filteredProducts" :key="p.id">
             <div
               class="ci-tr"
               :class="{
@@ -276,19 +358,24 @@
                   </span>
                 </div>
               </div>
-              <div class="ci-td" @click.stop>
-                <select v-model="p.category" class="ci-input">
-                  <option v-for="c in CATEGORIES" :key="c">{{ c }}</option>
-                </select>
-              </div>
               <div class="ci-td ci-td--num" @click.stop>
                 <input v-model="p.sku" class="ci-input ci-input--mono" />
               </div>
               <div class="ci-td ci-td--num" @click.stop>
-                <input v-model.number="p.stock" type="number" class="ci-input" />
+                <input
+                  v-model.number="p.stock"
+                  type="number"
+                  class="ci-input"
+                  @paste="onColumnPaste(p, $event, 'stock')"
+                />
               </div>
               <div class="ci-td ci-td--num" @click.stop>
-                <input v-model.number="p.retail" type="number" class="ci-input" />
+                <input
+                  v-model.number="p.retail"
+                  type="number"
+                  class="ci-input"
+                  @paste="onColumnPaste(p, $event, 'retail')"
+                />
               </div>
               <div class="ci-td ci-td--num" @click.stop>
                 <select v-model.number="p.vat" class="ci-input">
@@ -298,7 +385,14 @@
                   <option :value="0">0</option>
                 </select>
               </div>
-              <div class="ci-td ci-td--num ci-td--highlight" @click.stop>
+              <div
+                class="ci-td ci-td--num ci-td--highlight"
+                :class="{ 'ci-td--pulse': showPulse && p.id === firstEmptyWholesaleId }"
+                @click.stop
+              >
+                <span v-if="showPulse && p.id === firstEmptyWholesaleId" class="ci-paste-tooltip">
+                  Paste a column from Excel to fill all rows
+                </span>
                 <div class="ci-wholesale-cell">
                   <button
                     v-if="!p.wholesale"
@@ -317,6 +411,7 @@
                     @focus="seedWholesale(p)"
                     @mousedown="seedWholesale(p)"
                     @keydown="onWholesaleKeydown(p, $event)"
+                    @paste="onWholesalePaste(p, $event)"
                   />
                 </div>
                 <div v-if="!p.wholesale" class="ci-cell-hint">
@@ -843,9 +938,169 @@ function acceptSuggestion(p: Product) {
   })
 }
 
+// ── Paste tip & pulse (discoverability) ──
+const showPasteTip = ref(localStorage.getItem('paste-tip-dismissed') !== '1')
+const showPulse = ref(true)
+
+function dismissPasteTip() {
+  showPasteTip.value = false
+  localStorage.setItem('paste-tip-dismissed', '1')
+}
+
+const firstEmptyWholesaleId = computed(() => {
+  const first = filteredProducts.value.find(p => !p.wholesale)
+  return first ? first.id : null
+})
+
+// Stop pulsing once user pastes once
+function stopPulse() { showPulse.value = false }
+
+// ── Excel-like paste to fill wholesale column ──
+const pasteToast = ref<string | null>(null)
+
+function onColumnPaste(p: Product, e: ClipboardEvent, field: 'stock' | 'retail') {
+  const text = e.clipboardData?.getData('text') ?? ''
+  const tokens = text
+    .split(/\r\n|\n|\r|\t|;|,/)
+    .map(t => t.trim())
+    .filter(t => t.length > 0)
+  if (tokens.length <= 1) return
+  e.preventDefault()
+  stopPulse()
+  const list = filteredProducts.value
+  const startIndex = list.findIndex(item => item.id === p.id)
+  if (startIndex === -1) return
+
+  let applied = 0, skipped = 0
+  const isInt = field === 'stock'
+
+  for (let i = 0; i < tokens.length; i++) {
+    const targetIndex = startIndex + i
+    if (targetIndex >= list.length) break
+    const target = list[targetIndex]
+    const cleaned = tokens[i].replace(/[€$£\s]/g, '').replace(',', '.')
+    const num = Number(cleaned)
+    if (!Number.isFinite(num) || num < 0) { skipped++; continue }
+    target[field] = isInt ? Math.round(num) : Math.round(num * 100) / 100
+    applied++
+  }
+
+  const overflow = Math.max(0, (startIndex + tokens.length) - list.length)
+  const labelMap = { stock: 'stock value', retail: 'retail price' } as const
+  const label = labelMap[field]
+  let msg = `Filled ${applied} ${label}${applied === 1 ? '' : 's'}`
+  if (skipped > 0) msg += ` · skipped ${skipped} non-numeric`
+  if (overflow > 0) msg += ` · ${overflow} extra ignored`
+  pasteToast.value = msg
+  setTimeout(() => { pasteToast.value = null }, 4000)
+}
+
+function onWholesalePaste(p: Product, e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text') ?? ''
+  // Detect a multi-value paste (newlines, tabs, semicolons or commas)
+  const tokens = text
+    .split(/\r\n|\n|\r|\t|;|,/)
+    .map(t => t.trim())
+    .filter(t => t.length > 0)
+
+  if (tokens.length <= 1) return // single value → let default paste happen
+
+  e.preventDefault()
+  stopPulse()
+  const list = filteredProducts.value
+  const startIndex = list.findIndex(item => item.id === p.id)
+  if (startIndex === -1) return
+
+  let applied = 0
+  let skipped = 0
+
+  for (let i = 0; i < tokens.length; i++) {
+    const targetIndex = startIndex + i
+    if (targetIndex >= list.length) break
+    const target = list[targetIndex]
+    const cleaned = tokens[i].replace(/[€$£\s]/g, '').replace(',', '.')
+    const num = Number(cleaned)
+    if (!Number.isFinite(num) || num <= 0) {
+      skipped++
+      continue
+    }
+    target.wholesale = Math.round(num * 100) / 100
+    applied++
+  }
+
+  const overflow = Math.max(0, (startIndex + tokens.length) - list.length)
+  let msg = `Filled ${applied} wholesale price${applied === 1 ? '' : 's'}`
+  if (skipped > 0) msg += ` · skipped ${skipped} non-numeric`
+  if (overflow > 0) msg += ` · ${overflow} extra ignored`
+  pasteToast.value = msg
+  setTimeout(() => { pasteToast.value = null }, 4000)
+}
+
+// ── Filtered list ──
+const filteredProducts = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return products.value.filter(p => {
+    if (q) {
+      const inName = p.name.toLowerCase().includes(q)
+      const inSku = p.sku.toLowerCase().includes(q)
+      const inTags = (p.tags || []).some((t: string) => t.toLowerCase().includes(q))
+      if (!inName && !inSku && !inTags) return false
+    }
+    if (filterStock.value === 'in' && (!p.stock || p.stock <= 0)) return false
+    if (filterStock.value === 'out' && p.stock !== 0) return false
+    if (filterStock.value === 'missing' && p.stock !== null && p.stock !== undefined && p.stock !== '' as any) return false
+    if (filterPrice.value === 'lt20' && !(p.retail < 20)) return false
+    if (filterPrice.value === '20to50' && !(p.retail >= 20 && p.retail <= 50)) return false
+    if (filterPrice.value === 'gt50' && !(p.retail > 50)) return false
+    if (filterVat.value !== '' && Number(p.vat) !== Number(filterVat.value)) return false
+    if (filterStatus.value === 'ready' && hasMissing(p)) return false
+    if (filterStatus.value === 'needs' && !hasMissing(p)) return false
+    if (filterStatus.value === 'missingWholesale' && p.wholesale) return false
+    return true
+  })
+})
+
+// ── Search & filters ──
+const searchQuery = ref('')
+const filterStock = ref('')
+const filterPrice = ref('')
+const filterVat = ref('')
+const filterStatus = ref('')
+
 // ── Bulk selection ──
 const selectedIds = ref<number[]>([])
+const bulkAction = ref<'wholesale' | 'retail' | 'stock' | 'vat' | 'tags'>('wholesale')
 const bulkPct = ref(50)
+const bulkRetail = ref(0)
+const bulkStock = ref(0)
+const bulkVat = ref(20)
+const bulkTag = ref('')
+
+function applyBulkRetail() {
+  const ids = selectedIds.value
+  products.value.forEach(p => { if (ids.includes(p.id)) p.retail = bulkRetail.value })
+  selectedIds.value = []
+}
+function applyBulkStock() {
+  const ids = selectedIds.value
+  products.value.forEach(p => { if (ids.includes(p.id)) p.stock = bulkStock.value })
+  selectedIds.value = []
+}
+function applyBulkVat() {
+  const ids = selectedIds.value
+  products.value.forEach(p => { if (ids.includes(p.id)) p.vat = bulkVat.value })
+  selectedIds.value = []
+}
+function applyBulkTag() {
+  const ids = selectedIds.value
+  const t = bulkTag.value.trim()
+  if (!t) return
+  products.value.forEach(p => {
+    if (ids.includes(p.id) && !p.tags.includes(t)) p.tags.push(t)
+  })
+  bulkTag.value = ''
+  selectedIds.value = []
+}
 
 const allSelected = computed(() =>
   products.value.length > 0 && selectedIds.value.length === products.value.length,
@@ -1327,14 +1582,17 @@ function publish() {
 .ci-review__head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--space-5);
   flex-wrap: wrap;
+  margin-bottom: var(--space-4);
 }
+
+.ci-review__head > div:first-child { max-width: 720px; }
 
 .ci-review__summary {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .ci-summary-stat {
@@ -1345,6 +1603,18 @@ function publish() {
   display: flex;
   flex-direction: column;
   min-width: 110px;
+  position: relative;
+}
+
+.ci-summary-stat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--neutral-500);
 }
 
 .ci-summary-stat__num {
@@ -1360,8 +1630,10 @@ function publish() {
   margin-top: var(--space-1);
 }
 
-.ci-summary-stat--ok { border-color: #D5FC52; background: #FBFEF4; }
-.ci-summary-stat--warn { border-color: #FCD8A8; background: #FFF8F0; }
+.ci-summary-stat--ok::before { background: var(--success); }
+.ci-summary-stat--warn::before { background: var(--warning); }
+.ci-summary-stat--ok .ci-summary-stat__num { color: var(--success); }
+.ci-summary-stat--warn .ci-summary-stat__num { color: var(--warning); }
 
 /* ── Wholesale helper (category-aware) ── */
 .ci-helper {
@@ -1502,7 +1774,7 @@ function publish() {
 .ci-table__head,
 .ci-tr {
   display: grid;
-  grid-template-columns: 40px 70px 1.6fr 130px 120px 80px 90px 80px 140px 80px 40px;
+  grid-template-columns: 40px 70px 1.8fr 130px 80px 90px 80px 140px 80px 40px;
   align-items: center;
 }
 
@@ -1588,6 +1860,191 @@ function publish() {
 }
 
 /* Bulk edit toolbar */
+.ci-paste-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: #EAF1EF;
+  border: 1px solid #C7DAD5;
+  border-left: 4px solid var(--success);
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  margin-bottom: var(--space-3);
+}
+
+.ci-paste-tip__icon {
+  color: var(--success);
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ci-paste-tip__body {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ci-paste-tip__body strong { font-weight: 700; }
+
+.ci-paste-tip__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--neutral-700);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.ci-paste-tip__close:hover { color: var(--primary); }
+
+/* Pulse cell + tooltip */
+.ci-td--pulse {
+  position: relative;
+  animation: ci-pulse 1.6s ease-in-out 3;
+  border-radius: 8px;
+}
+
+@keyframes ci-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(85,117,112,0); }
+  50% { box-shadow: 0 0 0 6px rgba(85,117,112,0.25); background: #EAF1EF; }
+}
+
+.ci-paste-tooltip {
+  position: absolute;
+  top: -38px;
+  right: 0;
+  background: var(--success);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: ci-tooltip-bounce 1.6s ease-in-out infinite;
+  z-index: 5;
+}
+
+.ci-paste-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  right: 18px;
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--success);
+}
+
+@keyframes ci-tooltip-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.ci-paste-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--success);
+  color: var(--white);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-modal);
+}
+
+.ci-reassure {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-2);
+  padding: 8px 14px;
+  background: #EAF1EF;
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.ci-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.ci-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  flex: 1 1 280px;
+  min-width: 200px;
+  color: var(--neutral-700);
+}
+
+.ci-search__input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.ci-search__clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--neutral-700);
+  line-height: 1;
+}
+
+.ci-filters {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.ci-filter {
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.ci-bulk__pick {
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.ci-bulk__input--wide {
+  width: 180px !important;
+}
+
 .ci-bulk {
   display: flex;
   align-items: center;

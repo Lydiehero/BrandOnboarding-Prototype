@@ -163,7 +163,7 @@ const tasks = ref<Task[]>([
     actionIcon: 'rocket-takeoff',
     href: '/mvp/preview-launch',
     done: false,
-    badge: { label: '30-day highlight', color: 'orange' },
+    badge: { label: '30-day highlight', color: 'green' },
   },
   {
     key: 'visibility',
@@ -219,6 +219,11 @@ function toggle(t: Task, index: number) {
   if (isLocked(index) && !t.done) return
   if (t.done && t.doneHref) {
     router.push(t.doneHref)
+    return
+  }
+  // If the task has a single primary action (a route), the whole card behaves as the CTA.
+  if (t.href && !t.boosts) {
+    router.push(t.href)
     return
   }
   activeKey.value = activeKey.value === t.key ? null : t.key
@@ -494,7 +499,7 @@ watch(
   bottom: 12px;
   width: 4px;
   border-radius: 0 4px 4px 0;
-  background: linear-gradient(180deg, #FFB070 0%, #FF6400 100%);
+  background: linear-gradient(180deg, #7A9590 0%, #557570 100%);
   opacity: 0.85;
 }
 
@@ -505,7 +510,7 @@ watch(
 }
 
 .task--active {
-  border-color: #E8B788;
+  border-color: #A8C0BB;
   box-shadow: var(--shadow-md);
   background: #F9F9F9;
 }
@@ -535,19 +540,19 @@ watch(
   height: 40px;
   border-radius: 50%;
   background: var(--white);
-  color: #C25A14;
+  color: #557570;
   font-size: 15px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1.5px solid #F2E4D0;
+  border: 1.5px solid #D4E0DD;
   box-shadow: var(--shadow-xs);
 }
 
 .task--active .task__num {
-  background: linear-gradient(135deg, #FFB070 0%, #FF6400 100%);
+  background: linear-gradient(135deg, #7A9590 0%, #557570 100%);
   color: var(--white);
   border-color: transparent;
 }

@@ -9,13 +9,6 @@
             : `${products.length} product${products.length === 1 ? '' : 's'} in your catalogue.` }}
         </p>
       </div>
-      <div class="mp-head__actions">
-        <a class="mp-head__download" href="/templates/ankorstore-catalogue-template.csv" download>
-          <AkIcon symbol="download" size="sm" />
-          Download Ankorstore template
-        </a>
-        <AkButton color="primary" symbol="plus-circle" @click="openDrawer">Add a product</AkButton>
-      </div>
     </header>
 
     <section v-if="products.length > 0" class="mp-table">
@@ -76,36 +69,59 @@
       </div>
     </section>
 
-    <section v-else class="mp-magento">
-      <div class="mp-magento__badge">
-        <AkIcon symbol="magic" size="sm" />
-        <span>We spotted your shop</span>
+    <section v-else class="mp-empty-wrap">
+      <div class="mp-empty-head">
+        <h2 class="mp-empty-h">How would you like to add your products?</h2>
+        <p class="mp-empty-p">Pick the option that fits you best — you can mix and match later.</p>
       </div>
-      <h2 class="mp-magento__title">Bring your Magento catalogue in, in two steps</h2>
-      <p class="mp-magento__text">
-        We detected your <strong>Magento store</strong> at <strong>yourshop.com</strong>. Export your products from Magento as a CSV, then drop the file here — we'll map your fields automatically and your catalogue will be ready in minutes.
-      </p>
 
-      <ol class="mp-magento__steps">
-        <li>
-          <span class="mp-magento__num">1</span>
-          <div>
-            <h3>Export from Magento</h3>
-            <p>In your Magento admin, go to <em>System → Data Transfer → Export</em>. Choose <em>Products</em> and export as CSV.</p>
-          </div>
-        </li>
-        <li>
-          <span class="mp-magento__num">2</span>
-          <div>
-            <h3>Import here</h3>
-            <p>Upload the CSV — we'll match images, prices, stock and variants. You can review everything before going live.</p>
-          </div>
-        </li>
-      </ol>
+      <div class="mp-options">
+        <article class="mp-opt mp-opt--reco" @click="goImport">
+          <span class="mp-opt__tag">Recommended</span>
+          <div class="mp-opt__icon mp-opt__icon--magento"><AkIcon symbol="magic" /></div>
+          <h3>Bring your Magento catalogue</h3>
+          <p>We detected your Magento store at <strong>yourshop.com</strong>. Import everything in two steps.</p>
+          <span class="mp-opt__cta">Import from Magento →</span>
+        </article>
 
-      <div class="mp-magento__actions">
-        <AkButton color="primary" symbol="magic" @click="goImport">Import from Magento</AkButton>
+        <article class="mp-opt" @click="downloadTemplate">
+          <div class="mp-opt__icon"><AkIcon symbol="file-earmark-spreadsheet" /></div>
+          <h3>Add products with our template</h3>
+          <p>Download the Ankorstore CSV template, fill it in with your products, then upload it back.</p>
+          <span class="mp-opt__cta">Download template →</span>
+        </article>
+
+        <article class="mp-opt" @click="openDrawer">
+          <div class="mp-opt__icon"><AkIcon symbol="plus-circle" /></div>
+          <h3>One by one</h3>
+          <p>Add products manually — best for small catalogues or to test the flow with a single item.</p>
+          <span class="mp-opt__cta">Add a product →</span>
+        </article>
       </div>
+
+      <details class="mp-other">
+        <summary class="mp-other__head">
+          <span>Other options</span>
+          <AkIcon class="mp-other__chev" symbol="chevron-down" size="sm" />
+        </summary>
+        <div class="mp-other__grid">
+          <article class="mp-other-card">
+            <div class="mp-other-card__icon"><AkIcon symbol="shop" /></div>
+            <h4>Shopify</h4>
+            <p>Export your Shopify products as CSV, then upload them here.</p>
+          </article>
+          <article class="mp-other-card">
+            <div class="mp-other-card__icon"><AkIcon symbol="shop" /></div>
+            <h4>PrestaShop</h4>
+            <p>Export from PrestaShop and bring your catalogue across.</p>
+          </article>
+          <article class="mp-other-card">
+            <div class="mp-other-card__icon"><AkIcon symbol="shop" /></div>
+            <h4>WooCommerce</h4>
+            <p>Export your WooCommerce products and upload the file.</p>
+          </article>
+        </div>
+      </details>
     </section>
 
     <AddProductDrawer :open="drawerOpen" @close="drawerOpen = false" />
@@ -137,6 +153,12 @@ function isNew(p: { createdAt: number }) {
 
 function openDrawer() { drawerOpen.value = true }
 function goImport() { router.push('/mvp/catalogue-import') }
+function downloadTemplate() {
+  const a = document.createElement('a')
+  a.href = '/templates/ankorstore-catalogue-template.csv'
+  a.download = 'ankorstore-catalogue-template.csv'
+  a.click()
+}
 </script>
 
 <style scoped>
@@ -183,17 +205,17 @@ function goImport() { router.push('/mvp/catalogue-import') }
   gap: 6px;
   padding: 8px 14px;
   background: var(--white);
-  border: 1px solid #F2E4D0;
+  border: 1px solid #D4E0DD;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  color: #C25A14;
+  color: #557570;
   text-decoration: none;
   transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .mp-head__download:hover {
-  border-color: #C25A14;
+  border-color: #557570;
   transform: translateY(-1px);
 }
 
@@ -358,6 +380,194 @@ function goImport() { router.push('/mvp/catalogue-import') }
   margin-top: var(--space-3);
 }
 
+/* Empty state — option picker */
+.mp-empty-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mp-empty-head { text-align: center; }
+.mp-empty-h {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 var(--space-2);
+}
+.mp-empty-p {
+  font-size: 14px;
+  color: var(--neutral-700);
+  margin: 0;
+}
+
+.mp-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .mp-options { grid-template-columns: 1fr; }
+}
+
+.mp-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.mp-opt:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: #A8C0BB;
+}
+
+.mp-opt--reco {
+  border-color: #A8C0BB;
+  box-shadow: var(--shadow-sm);
+}
+
+.mp-opt__tag {
+  position: absolute;
+  top: -10px;
+  left: var(--space-4);
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #7A9590 0%, #557570 100%);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mp-opt__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #F9F9F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 20px;
+  margin-bottom: var(--space-1);
+}
+
+.mp-opt__icon--magento {
+  background: #EAF1EF;
+  color: #557570;
+}
+
+.mp-opt h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.mp-opt p {
+  font-size: 13px;
+  color: var(--neutral-700);
+  margin: 0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.mp-opt__cta {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  font-weight: 700;
+  color: #557570;
+}
+
+.mp-other {
+  border-top: 1px dashed var(--color-border-light);
+  padding-top: var(--space-3);
+}
+
+.mp-other__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neutral-700);
+  list-style: none;
+  padding: var(--space-2);
+  user-select: none;
+}
+
+.mp-other__head::-webkit-details-marker { display: none; }
+
+.mp-other__chev {
+  transition: transform 200ms ease;
+}
+
+.mp-other[open] .mp-other__chev {
+  transform: rotate(180deg);
+}
+
+.mp-other__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 900px) {
+  .mp-other__grid { grid-template-columns: 1fr; }
+}
+
+.mp-other-card {
+  padding: var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  opacity: 0.9;
+}
+
+.mp-other-card__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F9F9F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-700);
+  margin-bottom: var(--space-1);
+}
+
+.mp-other-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.mp-other-card p {
+  font-size: 12px;
+  color: var(--neutral-700);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Magento import card */
 .mp-magento {
   background: var(--white);
@@ -378,8 +588,8 @@ function goImport() { router.push('/mvp/catalogue-import') }
   gap: 6px;
   align-self: flex-start;
   padding: 6px 12px;
-  background: #FFF1E0;
-  color: #C25A14;
+  background: #EAF1EF;
+  color: #557570;
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
@@ -444,7 +654,7 @@ function goImport() { router.push('/mvp/catalogue-import') }
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FFB070 0%, #FF6400 100%);
+  background: linear-gradient(135deg, #7A9590 0%, #557570 100%);
   color: var(--white);
   font-size: 13px;
   font-weight: 700;
@@ -460,17 +670,17 @@ function goImport() { router.push('/mvp/catalogue-import') }
   margin-top: var(--space-2);
   padding: 8px 14px;
   background: var(--white);
-  border: 1px solid #F2E4D0;
+  border: 1px solid #D4E0DD;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  color: #C25A14;
+  color: #557570;
   text-decoration: none;
   transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .mp-magento__download:hover {
-  border-color: #C25A14;
+  border-color: #557570;
   transform: translateY(-1px);
 }
 

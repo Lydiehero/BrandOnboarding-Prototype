@@ -4,22 +4,28 @@
       <!-- Top navigation -->
       <div class="sidebar__top">
         <template v-for="item in topItems" :key="item.path">
-          <button
+          <div
             class="sidebar__item"
             :class="{ 'sidebar__item--active': isSectionActive(item) }"
-            @click="onItemClick(item)"
+            @click="goToItem(item)"
           >
             <AkIcon :symbol="item.icon" size="sm" />
             <span v-if="!collapsed" class="sidebar__label">{{ item.label }}</span>
             <template v-if="!collapsed">
               <span v-if="item.badge" class="sidebar__badge">{{ item.badge }}</span>
-              <AkIcon
+              <button
                 v-if="item.children"
-                :symbol="expanded[item.path] ? 'chevron-up' : 'chevron-down'"
-                size="sm"
-              />
+                class="sidebar__chev"
+                aria-label="Expand"
+                @click.stop="toggleExpand(item)"
+              >
+                <AkIcon
+                  :symbol="expanded[item.path] ? 'chevron-up' : 'chevron-down'"
+                  size="sm"
+                />
+              </button>
             </template>
-          </button>
+          </div>
 
           <!-- Children (expandable) -->
           <div v-if="item.children && expanded[item.path] && !collapsed" class="sidebar__children">
@@ -81,6 +87,14 @@ function onItemClick(item: NavItem) {
   } else {
     router.push(item.path)
   }
+}
+
+function goToItem(item: NavItem) {
+  router.push(item.path)
+}
+
+function toggleExpand(item: NavItem) {
+  expanded[item.path] = !expanded[item.path]
 }
 </script>
 
@@ -151,6 +165,19 @@ function onItemClick(item: NavItem) {
   color: var(--accent, #517070);
 }
 .sidebar__label { flex: 1; text-align: left; }
+
+.sidebar__chev {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar__chev:hover { background: var(--neutral-100); }
 
 .sidebar__badge {
   display: flex;
